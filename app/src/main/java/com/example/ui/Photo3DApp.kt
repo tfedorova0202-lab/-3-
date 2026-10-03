@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewInAr
@@ -62,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.components.AnalysisComparisonView
+import com.example.ui.components.CameraCaptureView
 import com.example.ui.components.ContourEditor
 import com.example.ui.components.SceneView3DViewer
 import com.example.ui.components.SettingsPanel
@@ -97,6 +99,7 @@ fun Photo3DApp(
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var useSceneView by remember { mutableStateOf(true) }
+    var isCameraOpen by remember { mutableStateOf(false) }
 
     // Android Photo Picker (zero storage permissions required)
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -146,6 +149,18 @@ fun Photo3DApp(
                     }
                 },
                 actions = {
+                    // Direct CameraX capture
+                    IconButton(
+                        onClick = { isCameraOpen = true },
+                        modifier = Modifier.testTag("action_open_camera")
+                    ) {
+                        Icon(
+                            Icons.Default.PhotoCamera,
+                            contentDescription = "Снять на камеру",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
                     // Open Photo Picker
                     IconButton(
                         onClick = {
@@ -364,6 +379,19 @@ fun Photo3DApp(
                         )
                     }
                 }
+            }
+
+            // Fullscreen CameraX Capture Modal
+            if (isCameraOpen) {
+                CameraCaptureView(
+                    onPhotoCaptured = { capturedBitmap ->
+                        viewModel.loadBitmap(capturedBitmap, "camera_${System.currentTimeMillis()}.jpg")
+                        isCameraOpen = false
+                        selectedTabIndex = 0
+                    },
+                    onClose = { isCameraOpen = false },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }
