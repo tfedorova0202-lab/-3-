@@ -1,0 +1,6 @@
+{
+  "name": "Photo2STL 3D",
+  "description": "Превращение фото предметов в точные 3D-модели (STL) для 3D-печати с умной сегментацией и объемной инфляцией формы.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
