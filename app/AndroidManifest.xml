@@ -1,0 +1,5 @@
+WebView webView = findViewById(R.id.webview);
+webView.getSettings().setJavaScriptEnabled(true);
+webView.getSettings().setAllowFileAccess(true);
+webView.getSettings().setDomStorageEnabled(true);
+webView.loadUrl("file:///android_asset/index.html");
