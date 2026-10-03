@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,8 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +47,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -59,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.components.AnalysisComparisonView
 import com.example.ui.components.ContourEditor
+import com.example.ui.components.SceneView3DViewer
 import com.example.ui.components.SettingsPanel
 import com.example.ui.components.Viewport3D
 import kotlinx.coroutines.launch
@@ -91,6 +96,7 @@ fun Photo3DApp(
     val isNaiveMode by viewModel.isNaiveComparisonMode.collectAsStateWithLifecycle()
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var useSceneView by remember { mutableStateOf(true) }
 
     // Android Photo Picker (zero storage permissions required)
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -234,12 +240,57 @@ fun Photo3DApp(
         ) {
             when (selectedTabIndex) {
                 0 -> {
-                    // Main 3D Viewport Screen
-                    Viewport3D(
-                        mesh = mesh,
-                        settings = printSettings,
-                        modifier = Modifier.fillMaxSize().padding(8.dp)
-                    )
+                    // 3D Viewport Screen with SceneView PBR and Slicer Bed Grid options
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = useSceneView,
+                                onClick = { useSceneView = true },
+                                label = { Text("SceneView 3D (Filament)", fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                modifier = Modifier.weight(1f).testTag("chip_sceneview_mode")
+                            )
+
+                            FilterChip(
+                                selected = !useSceneView,
+                                onClick = { useSceneView = false },
+                                label = { Text("Стол слайсера (Canvas)", fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                modifier = Modifier.weight(1f).testTag("chip_canvas_mode")
+                            )
+                        }
+
+                        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                            if (useSceneView) {
+                                SceneView3DViewer(
+                                    mesh = mesh,
+                                    settings = printSettings,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Viewport3D(
+                                    mesh = mesh,
+                                    settings = printSettings,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    }
                 }
                 1 -> {
                     // Slicing & Geometry Settings
